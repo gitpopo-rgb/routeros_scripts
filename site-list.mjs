@@ -1,0 +1,15 @@
+export default [
+    "Blizzard",
+    "Claude",
+    "Cloudflare",
+    "Copilot",
+    "Docker",
+    "GitHub",
+    "Google",
+    "GoogleDrive",
+    "Notion",
+    "Steam",
+    "Xbox",
+    "YouTube",
+    "Telegram",
+];

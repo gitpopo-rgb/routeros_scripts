@@ -1,0 +1,23 @@
+{
+  "name": "routeros_scripts",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/gitpopo-rgb/routeros_scripts#readme",
+  "bugs": {
+    "url": "https://github.com/gitpopo-rgb/routeros_scripts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gitpopo-rgb/routeros_scripts.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "generate": "node main.mjs",
+    "validate": "node validate.mjs",
+    "build": "node main.mjs && node validate.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

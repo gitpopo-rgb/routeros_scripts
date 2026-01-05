@@ -1,0 +1,115 @@
+name: Generate RouterOS Scripts
+
+on:
+  schedule:
+    # 每天 UTC 时间 02:00 运行（北京时间 10:00）
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 允许手动触发
+  push:
+    branches:
+      - main
+    paths:
+      - 'site-list.mjs'
+      - 'main.mjs'
+      - '.github/workflows/generate-routeros-scripts.yml'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Clone ios_rule_script Repository
+        run: |
+          if [ -d "ios_rule_script" ]; then
+            echo "Directory ios_rule_script already exists, removing..."
+            rm -rf ios_rule_script
+          fi
+          git clone --depth 1 https://github.com/blackmatrix7/ios_rule_script.git ios_rule_script
+          echo "✅ Successfully cloned ios_rule_script repository"
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: |
+          npm ci
+          echo "✅ Dependencies installed"
+      
+      - name: Generate RouterOS Scripts
+        run: |
+          npm run generate
+          echo "✅ RouterOS scripts generated"
+      
+      - name: Check Generated Files
+        run: |
+          if [ ! -f "auto_proxy_patch.rsc" ]; then
+            echo "❌ Error: auto_proxy_patch.rsc not found"
+            exit 1
+          fi
+          if [ ! -f "auto_proxy_clean_patch.rsc" ]; then
+            echo "❌ Error: auto_proxy_clean_patch.rsc not found"
+            exit 1
+          fi
+          echo "✅ Both script files exist"
+          echo "📊 File sizes:"
+          ls -lh auto_proxy_patch.rsc auto_proxy_clean_patch.rsc
+      
+      - name: Get Current Date
+        id: date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      
+      - name: Create Release Tag
+        id: create_tag
+        run: |
+          TAG_NAME="v${{ steps.date.outputs.date }}-$(date +'%H%M%S')"
+          echo "tag_name=$TAG_NAME" >> $GITHUB_OUTPUT
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+          echo "✅ Created and pushed tag: $TAG_NAME"
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          name: RouterOS Scripts - ${{ steps.date.outputs.date }}
+          body: |
+            ## 🎉 自动生成的 RouterOS 脚本
+            
+            ### 📦 文件说明
+            - `auto_proxy_patch.rsc` - RouterOS 代理配置脚本（添加规则）
+            - `auto_proxy_clean_patch.rsc` - RouterOS 清理脚本（删除规则）
+            
+            ### 📊 生成信息
+            - 生成时间: ${{ steps.date.outputs.date }}
+            - 触发方式: ${{ github.event_name }}
+            - 提交: ${{ github.sha }}
+            
+            ### 🚀 使用方法
+            1. 下载所需的脚本文件
+            2. 在 RouterOS 中执行 `auto_proxy_patch.rsc` 添加规则
+            3. 如需清理规则，执行 `auto_proxy_clean_patch.rsc`
+            
+            ### ⚠️ 注意事项
+            - 执行前请确保已设置 `$vpn_dns_server` 变量
+            - 建议先在测试环境中验证脚本
+            - 清理脚本会删除所有相关的 DNS 静态记录和地址列表
+          files: |
+            auto_proxy_patch.rsc
+            auto_proxy_clean_patch.rsc
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
