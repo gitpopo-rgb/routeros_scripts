@@ -47,14 +47,21 @@ function parseRuleFile(filePath, siteName) {
  * 生成 RouterOS DNS 静态解析脚本
  */
 function generateDnsScript(domain, matchSubdomain, comment) {
-    return `/ip dns static add name=${domain} type=FWD forward-to=$vpn_dns_server address-list=auto_proxy_list match-subdomain=${matchSubdomain} comment="vpn-dns: ${comment}"`;
+    return `/ip dns static add name=${domain} type=FWD forward-to=$VpnDnsServer address-list=auto_proxy_list match-subdomain=${matchSubdomain} comment="vpn-dns: ${comment}"`;
 }
 
 /**
- * 生成 RouterOS IP address-list 脚本
+ * 生成 RouterOS IPv4 address-list 脚本
  */
-function generateAddressListScript(address, comment) {
+function generateIpv4AddressListScript(address, comment) {
     return `/ip firewall address-list add address=${address} comment="vpn: ${comment}" list=auto_proxy_list`;
+}
+
+/**
+ * 生成 RouterOS IPv6 address-list 脚本
+ */
+function generateIpv6AddressListScript(address, comment) {
+    return `/ipv6 firewall address-list add address=${address} comment="vpn: ${comment}" list=auto_proxy_list`;
 }
 
 /**
@@ -65,6 +72,7 @@ function generateCleanScript() {
         '# 清理自动代理规则',
         '/ip dns static remove [find comment~"vpn-dns:"]',
         '/ip firewall address-list remove [find list="auto_proxy_list"]',
+        '/ipv6 firewall address-list remove [find list="auto_proxy_list"]',
         ''
     ].join('\n');
 }
@@ -147,6 +155,7 @@ function main() {
     scripts.push('');
     scripts.push('# DNS 静态解析规则');
     scripts.push('');
+    scripts.push(':local VpnDnsServer "VpnDnsServerIp"')
 
     // DOMAIN 规则
     console.log('生成 DOMAIN 规则...');
@@ -177,7 +186,7 @@ function main() {
     const sortedCidrs = Array.from(allRules.ipCidrs).sort();
     sortedCidrs.forEach(cidr => {
         const comment = siteComments.get(`cidr:${cidr}`);
-        scripts.push(generateAddressListScript(cidr, comment));
+        scripts.push(generateIpv4AddressListScript(cidr, comment));
     });
 
     // IP-CIDR6 规则
@@ -185,7 +194,7 @@ function main() {
     const sortedCidr6s = Array.from(allRules.ipCidr6s).sort();
     sortedCidr6s.forEach(cidr => {
         const comment = siteComments.get(`cidr6:${cidr}`);
-        scripts.push(generateAddressListScript(cidr, comment));
+        scripts.push(generateIpv6AddressListScript(cidr, comment));
     });
 
     // 写入添加规则脚本
