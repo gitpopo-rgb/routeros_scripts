@@ -1,0 +1,20 @@
+# NAME: Custom
+# AUTHOR: local
+# UPDATED: auto
+# DOMAIN: 0
+# DOMAIN-SUFFIX: 0
+# IP-CIDR: 0
+# IP-CIDR6: 0
+# TOTAL: 0
+#
+# 在此文件中添加自定义规则，格式同 Clash list：
+# 仅支持以下前缀：DOMAIN, DOMAIN-SUFFIX, IP-CIDR, IP-CIDR6
+# 示例：
+# DOMAIN,example.com
+# DOMAIN-SUFFIX,example.org
+# IP-CIDR,192.0.2.0/24,no-resolve
+# IP-CIDR6,2001:db8::/32,no-resolve
+
+# ip query sites
+DOMAIN-SUFFIX,whatismyipaddress.com
+DOMAIN-SUFFIX,ipaddress.my

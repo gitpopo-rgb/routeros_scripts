@@ -46,6 +46,17 @@ npm run build
 - `auto_proxy_patch.rsc` - RouterOS 代理规则脚本
 - `auto_proxy_clean_patch.rsc` - 清理规则的脚本
 
+### 4. 自定义规则
+
+支持通过 [custom/custom.list](custom/custom.list) 添加自定义规则，格式与 Clash `.list` 相同，仅支持以下前缀：
+
+- DOMAIN,example.com
+- DOMAIN-SUFFIX,example.org
+- IP-CIDR,192.0.2.0/24,no-resolve
+- IP-CIDR6,2001:db8::/32,no-resolve
+
+添加后重新运行生成命令即可合并到输出脚本中，来源注释会显示为 `Custom`。
+
 ### 4. 使用生成的脚本
 
 #### 方法 1: 通过 WinBox/WebFig

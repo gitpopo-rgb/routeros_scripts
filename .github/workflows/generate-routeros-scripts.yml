@@ -11,6 +11,7 @@ on:
     paths:
       - 'site-list.mjs'
       - 'main.mjs'
+      - 'custom/**'
       - '.github/workflows/generate-routeros-scripts.yml'
 
 jobs:

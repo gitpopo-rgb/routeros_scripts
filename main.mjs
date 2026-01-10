@@ -147,6 +147,51 @@ function main() {
         console.log(`  - IP-CIDR6: ${rules.ipCidr6s.size}\n`);
     }
 
+    // 处理自定义规则文件 custom/custom.list（可选）
+    const customConfigPath = path.join(process.cwd(), 'custom', 'custom.list');
+    if (fs.existsSync(customConfigPath)) {
+        console.log(`处理自定义规则: custom`);
+        console.log(`配置文件: ${customConfigPath}`);
+
+        const customRules = parseRuleFile(customConfigPath, 'Custom');
+        if (customRules) {
+            customRules.domains.forEach(domain => {
+                allRules.domains.add(domain);
+                if (!siteComments.has(`domain:${domain}`)) {
+                    siteComments.set(`domain:${domain}`, 'Custom');
+                }
+            });
+
+            customRules.domainSuffixes.forEach(domain => {
+                allRules.domainSuffixes.add(domain);
+                if (!siteComments.has(`suffix:${domain}`)) {
+                    siteComments.set(`suffix:${domain}`, 'Custom');
+                }
+            });
+
+            customRules.ipCidrs.forEach(cidr => {
+                allRules.ipCidrs.add(cidr);
+                if (!siteComments.has(`cidr:${cidr}`)) {
+                    siteComments.set(`cidr:${cidr}`, 'Custom');
+                }
+            });
+
+            customRules.ipCidr6s.forEach(cidr => {
+                allRules.ipCidr6s.add(cidr);
+                if (!siteComments.has(`cidr6:${cidr}`)) {
+                    siteComments.set(`cidr6:${cidr}`, 'Custom');
+                }
+            });
+
+            console.log(`  - DOMAIN: ${customRules.domains.size}`);
+            console.log(`  - DOMAIN-SUFFIX: ${customRules.domainSuffixes.size}`);
+            console.log(`  - IP-CIDR: ${customRules.ipCidrs.size}`);
+            console.log(`  - IP-CIDR6: ${customRules.ipCidr6s.size}\n`);
+        }
+    } else {
+        console.log('未检测到自定义规则文件: custom/custom.list\n');
+    }
+
     // 生成脚本
     const scripts = [];
     scripts.push('# RouterOS 自动代理规则');
